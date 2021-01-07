@@ -1,9 +1,9 @@
 package com.stock.exchange.modules.operation.service.impl;
 
-import com.stock.exchange.exception.OperationNotFoundException;
 import com.stock.exchange.modules.operation.dto.OperationDTO;
 import com.stock.exchange.modules.operation.service.OperationService;
 import com.stock.exchange.modules.operation.service.mapper.OperationMapper;
+import javassist.NotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,26 +24,26 @@ public class OperationServiceImpl implements OperationService {
     }
 
     @Override
-    public OperationDTO findByUsername(String userName) throws OperationNotFoundException {
-        final var operationFoundUserName = repository.findByUserName(userName)
-                .orElseThrow(() -> new OperationNotFoundException(userName));
-
-        return OperationMapper.toModel(operationFoundUserName);
+    public List<OperationDTO> findByUsername(String userName) {
+        return repository.findByUserName(userName)
+                .stream()
+                .map(OperationMapper::toModel)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public OperationDTO findByCorretora(String corretora) throws OperationNotFoundException {
-        final var operationFoundCorretora = repository.findByCorretora(corretora)
-                .orElseThrow(() -> new OperationNotFoundException(corretora));
-
-        return OperationMapper.toModel(operationFoundCorretora);
+    public List<OperationDTO> findByCorretora(String corretora) {
+        return repository.findByCorretora(corretora)
+                .stream()
+                .map(OperationMapper::toModel)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public OperationDTO findById(Long idOperation) throws OperationNotFoundException {
+    public OperationDTO findById(Long idOperation) throws NotFoundException {
         return repository.findById(idOperation)
                 .map(OperationMapper::toModel)
-                .orElseThrow(() -> new OperationNotFoundException(idOperation));
+                .orElseThrow(() -> new NotFoundException("Não foi encontrado uma operação com esse id."));
     }
 
     @Override
@@ -55,7 +55,7 @@ public class OperationServiceImpl implements OperationService {
     }
 
     @Override
-    public void deleteById(Long id) throws OperationNotFoundException {
+    public void deleteById(Long id) throws NotFoundException {
         this.findById(id);
         this.repository.deleteById(id);
     }
